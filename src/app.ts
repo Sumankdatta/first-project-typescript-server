@@ -4,6 +4,7 @@ import { StudentRouts } from './app/modules/student/student.route';
 import { UserRoutes } from './app/modules/user/user.route';
 import globalErrorhandler from './app/middlewears/global.errorhandler';
 import notFound from './app/middlewears/notfound';
+import { academicSemesterRoute } from './app/modules/academicSemester/academicSemester.route';
 const app: Application = express();
 
 //parser
@@ -13,6 +14,7 @@ app.use(cors());
 
 app.use('/api/v1/student', StudentRouts);
 app.use('/api/v1/users', UserRoutes);
+app.use('/api/v1/academic-semester', academicSemesterRoute);
 
 app.get('/', (req: Request, res: Response) => {
   const a = 10;
