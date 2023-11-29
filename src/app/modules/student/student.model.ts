@@ -86,6 +86,12 @@ const studentSchema = new Schema<Student>({
     unique: true,
     required: [true, 'Student id is required'],
   },
+  user: {
+    type: Schema.Types.ObjectId,
+    required: [true, 'User id is required'],
+    unique: true,
+    ref: 'User',
+  },
   name: {
     type: userNameSchema,
     required: [true, 'Name is required'],
@@ -141,19 +147,6 @@ const studentSchema = new Schema<Student>({
     required: [true, 'Local guardian is required'],
   },
   profileImg: String,
-  isActive: {
-    type: String,
-    enum: ['active', 'blocked'],
-    default: 'active',
-  },
-});
-
-studentSchema.pre('save', function () {
-  console.log(this, 'pre hook will save data');
-});
-
-studentSchema.post('save', function () {
-  console.log('after save data');
 });
 
 export const StudentModel = model<Student>('Student', studentSchema);
