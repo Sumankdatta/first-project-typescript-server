@@ -146,6 +146,14 @@ const studentSchema = new Schema<Student>({
     type: localGuardianSchema,
     required: [true, 'Local guardian is required'],
   },
+  admissionSemester: {
+    type: Schema.Types.ObjectId,
+    ref: 'AcademicSemester',
+  },
+  academicDepartment: {
+    type: Schema.Types.ObjectId,
+    ref: 'AcademicDepartment',
+  },
   profileImg: String,
 });
 
