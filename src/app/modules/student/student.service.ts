@@ -5,8 +5,23 @@ import httpStatus from 'http-status';
 import { User } from '../user/user.model';
 import { Student } from './student.interface';
 
-const getAllStudentFromDb = async () => {
-  const result = await StudentModel.find()
+const getAllStudentFromDb = async (query: Record<string, unknown>) => {
+  const studentSearchableFields = ['email', 'name.firstName', 'presentAddress'];
+  let searchTerm = '';
+
+  if (query?.searchTerm) {
+    searchTerm = query?.searchTerm as string;
+  }
+
+  const searchQuery = StudentModel.find({
+    $or: studentSearchableFields.map((field) => ({
+      [field]: { $regex: searchTerm, $options: 'i' },
+    })),
+  });
+
+  const result = await searchQuery
+    .find()
+
     .populate('admissionSemester')
     .populate({
       path: 'academicDepartment',
@@ -67,11 +82,40 @@ const deletedStudentFromDb = async (id: string) => {
   } catch (err) {
     await session.abortTransaction();
     await session.endSession();
+    throw new Error('Failed to delete student');
   }
 };
 
 const updateStudentIntoDb = async (id: string, payload: Partial<Student>) => {
-  const result = await StudentModel.findOneAndUpdate({ id }, payload);
+  const { name, guardian, localGuardian, ...remainingStudentData } = payload;
+
+  const modifiedUpdateData: Record<string, unknown> = {
+    ...remainingStudentData,
+  };
+
+  if (name && Object.keys(name).length) {
+    for (const [key, value] of Object.entries(name)) {
+      modifiedUpdateData[`name.${key}`] = value;
+    }
+  }
+
+  if (guardian && Object.keys(guardian).length) {
+    for (const [key, value] of Object.entries(guardian)) {
+      modifiedUpdateData[`guardian.${key}`] = value;
+    }
+  }
+
+  if (localGuardian && Object.keys(localGuardian).length) {
+    for (const [key, value] of Object.entries(localGuardian)) {
+      modifiedUpdateData[`localGuardian.${key}`] = value;
+    }
+  }
+
+  const result = await StudentModel.findOneAndUpdate(
+    { id },
+    modifiedUpdateData,
+    { new: true, runValidators: true },
+  );
   return result;
 };
 
